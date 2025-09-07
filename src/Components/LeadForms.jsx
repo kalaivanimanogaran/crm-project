@@ -14,7 +14,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs from "dayjs"
 
 function LeadForms({ open, onClose, leadData, onSave }) {
-  const [formData, setFormData] = React.useState(leadData || {})
+  const [formData, setFormData] = React.useState({})
   const [errors, setErrors] = React.useState({})
 
   React.useEffect(() => {
@@ -56,6 +56,9 @@ function LeadForms({ open, onClose, leadData, onSave }) {
         ? dayjs(formData.updatedDate).format("YYYY-MM-DD")
         : dayjs().format("YYYY-MM-DD"),
     })
+
+    // ✅ Reset form after save
+    setFormData({})
     onClose()
   }
 
@@ -64,7 +67,6 @@ function LeadForms({ open, onClose, leadData, onSave }) {
       <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>{leadData ? "Edit Lead" : "Add New Lead"}</DialogTitle>
         <DialogContent>
-          {/* Lead ID */}
           <TextField
             margin="dense"
             label="Lead ID"
@@ -178,16 +180,15 @@ function LeadForms({ open, onClose, leadData, onSave }) {
             onChange={(e) => handleChange("notes", e.target.value)}
           />
 
-          {/* Date Pickers */}
           <DatePicker
             label="Created Date"
-            value={formData.createdDate ? dayjs(formData.createdDate) : dayjs()}
+            value={formData.createdDate ? dayjs(formData.createdDate) : null}
             onChange={(newValue) => handleChange("createdDate", newValue)}
             slotProps={{ textField: { fullWidth: true, margin: "dense" } }}
           />
           <DatePicker
             label="Updated Date"
-            value={formData.updatedDate ? dayjs(formData.updatedDate) : dayjs()}
+            value={formData.updatedDate ? dayjs(formData.updatedDate) : null}
             onChange={(newValue) => handleChange("updatedDate", newValue)}
             slotProps={{ textField: { fullWidth: true, margin: "dense" } }}
           />
