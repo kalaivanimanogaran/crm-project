@@ -29,6 +29,7 @@ function LeadForms({ open, onClose, leadData, onSave }) {
 
   const validateForm = () => {
     let tempErrors = {}
+    if (!formData.id) tempErrors.id = "This field is required"
     if (!formData.name) tempErrors.name = "This field is required"
     if (!formData.company) tempErrors.company = "This field is required"
     if (!formData.mobile) tempErrors.mobile = "This field is required"
@@ -57,7 +58,6 @@ function LeadForms({ open, onClose, leadData, onSave }) {
         : dayjs().format("YYYY-MM-DD"),
     })
 
-    // ✅ Reset form after save
     setFormData({})
     onClose()
   }
@@ -71,12 +71,12 @@ function LeadForms({ open, onClose, leadData, onSave }) {
             margin="dense"
             label="Lead ID"
             fullWidth
+            required
             value={formData.id || ""}
-            InputProps={{
-              readOnly: true,
-            }}
+            onChange={(e) => handleChange("id", e.target.value)}
+            error={!!errors.id}
+            helperText={errors.id}
           />
-
           <TextField
             margin="dense"
             label="Lead Name"

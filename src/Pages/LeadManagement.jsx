@@ -1,292 +1,16 @@
-// import React, { useState, useEffect } from "react";
-// import { AgGridReact } from "ag-grid-react";
-// import { ModuleRegistry, ClientSideRowModelModule } from "ag-grid-community";
-// import "ag-grid-community/styles/ag-grid.css";
-// import "ag-grid-community/styles/ag-theme-alpine.css";
-// import { Button } from "@mui/material";
-// import LeadForms from "../Components/LeadForms";
-
-// // Register AG Grid modules
-// ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
-// function LeadManagement() {
-//   const [rowData, setRowData] = useState([]);
-//   const [columnDefs, setColumnDefs] = useState([]);
-//   const [openForm, setOpenForm] = useState(false);
-//   const [editingLead, setEditingLead] = useState(null);
-
-//   // ✅ Load saved data from localStorage on first render
-//   useEffect(() => {
-//     const savedData = localStorage.getItem("leads");
-//     if (savedData) {
-//       const leads = JSON.parse(savedData);
-//       setRowData(leads);
-
-//       if (leads.length > 0) {
-//         const fields = Object.keys(leads[0]);
-//         const otherFields = fields.filter(
-//           (key) => key !== "createdDate" && key !== "updatedDate"
-//         );
-//         const orderedFields = [...otherFields, "createdDate", "updatedDate"];
-//         const newColumns = orderedFields.map((key) => ({
-//           headerName: key
-//             .replace(/([A-Z])/g, " $1")
-//             .replace(/^./, (str) => str.toUpperCase()),
-//           field: key,
-//           sortable: true,
-//           filter: true,
-//         }));
-//         setColumnDefs(newColumns);
-//       }
-//     }
-//   }, []);
-
-//   const handleSaveLead = (formData) => {
-//     const newLead = {
-//       id: rowData.length + 1,
-//       createdDate: new Date().toISOString().split("T")[0],
-//       updatedDate: new Date().toISOString().split("T")[0],
-//       ...formData,
-//     };
-
-//     const updatedData = [...rowData, newLead];
-//     setRowData(updatedData);
-
-//     // ✅ Save to localStorage
-//     localStorage.setItem("leads", JSON.stringify(updatedData));
-
-//     // ✅ Generate columns only once
-//     if (columnDefs.length === 0) {
-//       const fields = Object.keys(newLead);
-//       const otherFields = fields.filter(
-//         (key) => key !== "createdDate" && key !== "updatedDate"
-//       );
-//       const orderedFields = [...otherFields, "createdDate", "updatedDate"];
-//       const newColumns = orderedFields.map((key) => ({
-//         headerName: key
-//           .replace(/([A-Z])/g, " $1")
-//           .replace(/^./, (str) => str.toUpperCase()),
-//         field: key,
-//         sortable: true,
-//         filter: true,
-//       }));
-//       setColumnDefs(newColumns);
-//     }
-
-//     setOpenForm(false);
-//     setEditingLead(null);
-//   };
-
-//   return (
-//     <div style={{ width: "100%", height: "100vh" }}>
-//       <h2 style={{ textAlign: "center" }}>Lead Management</h2>
-
-//       <Button
-//         variant="contained"
-//         onClick={() => setOpenForm(true)}
-//         style={{ margin: "10px", backgroundColor: "#4caf50", color: "#fff" }}
-//       >
-//         + Add New Lead
-//       </Button>
-
-//       <div
-//         className="ag-theme-alpine"
-//         style={{ height: 400, width: "95%", margin: "auto" }}
-//       >
-//         <AgGridReact
-//           rowData={rowData}
-//           columnDefs={columnDefs}
-//           pagination
-//           paginationPageSize={5}
-//         />
-//       </div>
-
-//       <LeadForms
-//         open={openForm}
-//         onClose={() => {
-//           setOpenForm(false);
-//           setEditingLead(null);
-//         }}
-//         leadData={editingLead}
-//         onSave={handleSaveLead}
-//       />
-//     </div>
-//   );
-// }
-
-// export default LeadManagement;
-
-
-
-// import React, { useState, useEffect, useMemo, useCallback } from "react";
-// import { AgGridReact } from "ag-grid-react";
-// import { ModuleRegistry, ClientSideRowModelModule } from "ag-grid-community";
-// import "ag-grid-community/styles/ag-grid.css";
-// import "ag-grid-community/styles/ag-theme-alpine.css";
-// import { Button } from "@mui/material";
-// import LeadForms from "../Components/LeadForms";
-
-// // ✅ Register only community modules
-// ModuleRegistry.registerModules([ClientSideRowModelModule]);
-
-// function LeadManagement() {
-//   const [rowData, setRowData] = useState([]);
-//   const [columnDefs, setColumnDefs] = useState([]);
-//   const [openForm, setOpenForm] = useState(false);
-//   const [editingLead, setEditingLead] = useState(null);
-//   const [pageSize, setPageSize] = useState(10);
-
-//   // ✅ Default Column Properties
-//   const defaultColDef = useMemo(() => {
-//     return {
-//       sortable: true,
-//       filter: true,
-//       resizable: true,
-//       flex: 1,
-//       minWidth: 120,
-//     };
-//   }, []);
-
-//   // ✅ Load data from localStorage
-//   useEffect(() => {
-//     const savedData = localStorage.getItem("leads");
-//     if (savedData) {
-//       const leads = JSON.parse(savedData);
-//       setRowData(leads);
-
-//       if (leads.length > 0) {
-//         generateColumns(leads[0]);
-//       }
-//     }
-//   }, []);
-
-//   // ✅ Generate Column Definitions dynamically
-//   const generateColumns = (sampleLead) => {
-//     const fields = Object.keys(sampleLead);
-//     const otherFields = fields.filter(
-//       (key) => key !== "createdDate" && key !== "updatedDate"
-//     );
-//     const orderedFields = [...otherFields, "createdDate", "updatedDate"];
-
-//     const newColumns = orderedFields.map((key) => ({
-//       headerName: key
-//         .replace(/([A-Z])/g, " $1")
-//         .replace(/^./, (str) => str.toUpperCase()),
-//       field: key,
-//     }));
-
-//     setColumnDefs(newColumns);
-//   };
-
-//   // ✅ Save new lead
-//   const handleSaveLead = (formData) => {
-//     const newLead = {
-//       id: rowData.length + 1,
-//       createdDate: new Date().toISOString().split("T")[0],
-//       updatedDate: new Date().toISOString().split("T")[0],
-//       ...formData,
-//     };
-
-//     const updatedData = [...rowData, newLead];
-//     setRowData(updatedData);
-//     localStorage.setItem("leads", JSON.stringify(updatedData));
-
-//     if (columnDefs.length === 0) {
-//       generateColumns(newLead);
-//     }
-
-//     setOpenForm(false);
-//     setEditingLead(null);
-//   };
-
-//   // ✅ Grid Ready Event
-//   const onGridReady = useCallback((params) => {
-//     params.api.sizeColumnsToFit();
-//   }, []);
-
-//   return (
-//     <div style={{ width: "100%", height: "100vh" }}>
-//       <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-//         Lead Management
-//       </h2>
-
-//       <Button
-//         variant="contained"
-//         onClick={() => setOpenForm(true)}
-//         style={{ margin: "10px", backgroundColor: "#4caf50", color: "#fff" }}
-//       >
-//         + Add New Lead
-//       </Button>
-
-//       {/* ✅ Grid */}
-//       <div
-//         className="ag-theme-alpine"
-//         style={{ height: "70vh", width: "95%", margin: "auto" }}
-//       >
-//         <AgGridReact
-//           rowData={rowData}
-//           columnDefs={columnDefs}
-//           defaultColDef={defaultColDef}
-//           pagination={true}
-//           paginationPageSize={pageSize}
-//           animateRows={true}
-//           onGridReady={onGridReady}
-//         />
-//       </div>
-
-//       {/* ✅ Pagination Controls*/}
-//       <div
-//         style={{
-//           width: "95%",
-//           margin: "10px auto",
-//           textAlign: "right",
-//           display: "flex",
-//           justifyContent: "flex-end",
-//           alignItems: "center",
-//           gap: "10px",
-//         }}
-//       >
-//         <label>Rows per page:</label>
-//         <select
-//           value={pageSize}
-//           onChange={(e) => setPageSize(Number(e.target.value))}
-//           style={{ padding: "5px" }}
-//         >
-//           <option value={5}>5</option>
-//           <option value={10}>10</option>
-//           <option value={20}>20</option>
-//           <option value={50}>50</option>
-//         </select>
-//       </div>
-
-//       {/* ✅ Lead Form Dialog */}
-//       <LeadForms
-//         open={openForm}
-//         onClose={() => {
-//           setOpenForm(false);
-//           setEditingLead(null);
-//         }}
-//         leadData={editingLead}
-//         onSave={handleSaveLead}
-//       />
-//     </div>
-//   );
-// }
-
-// export default LeadManagement;
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, ClientSideRowModelModule } from "ag-grid-community";
+import { ModuleRegistry, ClientSideRowModelModule, TextFilterModule, DateFilterModule } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Button, Chip, Stack, IconButton, Box } from "@mui/material";
 
 // ✅ Import icons from react-icons
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa"; // FaPlus is not needed if you're not using it in the button
 import LeadForms from "../Components/LeadForms";
 
-// ✅ Register community modules
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+// ✅ Register community modules including the TextFilterModule
+ModuleRegistry.registerModules([ClientSideRowModelModule, TextFilterModule, DateFilterModule]);
 
 // ✅ Cell renderer for Lead Status
 const StatusCellRenderer = (params) => {
@@ -312,10 +36,10 @@ const ActionsCellRenderer = (params) => {
   return (
     <Stack direction="row" spacing={1}>
       <IconButton aria-label="edit" size="small" onClick={() => onEdit(data)}>
-        <FaEdit color="primary" />
+        <FaEdit style={{ color: "blue" }} />
       </IconButton>
       <IconButton aria-label="delete" size="small" onClick={() => onDelete(data.id)}>
-        <FaTrash color="error" />
+        <FaTrash style={{ color: "red" }} />
       </IconButton>
     </Stack>
   );
@@ -331,42 +55,66 @@ function LeadManagement() {
   const defaultColDef = useMemo(() => {
     return {
       sortable: true,
-      filter: true,
       resizable: true,
       flex: 1,
       minWidth: 150,
+      filter: true, // This enables filter for all columns by default
     };
   }, []);
 
   // ✅ Updated Column Definitions to match LeadForms fields
   const [columnDefs, setColumnDefs] = useState([
     {
+      headerName: "Lead ID",
+      field: "id",
+      minWidth: 120,
+      // ✅ Use valueGetter for proper numeric sorting of IDs like 'L001', 'L002', 'L010'
+      valueGetter: (params) => {
+        if (params.data && params.data.id && typeof params.data.id === 'string') {
+          return Number(params.data.id.slice(1));
+        }
+        return null;
+      },
+      sort: 'asc', // Automatically sort by Lead ID ascending
+      unSortIcon: true // show sort icon on unsorted column
+    },
+    {
       headerName: "Lead Name",
-      field: "name", // Updated to 'name'
-      filter:"agTextColumnFilter",
+      field: "name",
       minWidth: 180,
+      wrapText: true,
+      autoHeight: true,
     },
     {
       headerName: "Company",
-      field: "company", // Updated to 'company'
-      filter:"agTextColumnFilter",
+      field: "company",
       minWidth: 200,
+      wrapText: true,
+      autoHeight: true,
+    },
+    {
+      headerName: "Contact Person",
+      field: "contactPerson",
+      minWidth: 180,
+      wrapText: true,
+      autoHeight: true,
     },
     {
       headerName: "Mobile Number",
-      field: "mobile", // Updated to 'mobile'
+      field: "mobile",
       minWidth: 150,
     },
     {
       headerName: "Email",
-      field: "email", // Updated to 'email'
+      field: "email",
       minWidth: 200,
+      wrapText: true,
+      autoHeight: true,
     },
     {
       headerName: "Status",
       field: "status",
       cellRenderer: StatusCellRenderer,
-      filter: true,
       minWidth: 150,
     },
     {
@@ -378,6 +126,15 @@ function LeadManagement() {
       headerName: "Assigned To",
       field: "assignedTo",
       minWidth: 150,
+      wrapText: true,
+      autoHeight: true,
+    },
+    {
+      headerName: "Notes / Remarks",
+      field: "notes",
+      minWidth: 250,
+      wrapText: true,
+      autoHeight: true,
     },
     {
       headerName: "Created Date",
@@ -399,7 +156,7 @@ function LeadManagement() {
         onDelete: (id) => handleDeleteLead(id),
       },
       sortable: false,
-      filter: false,
+      filter: false, // Explicitly disable filter for this column
       flex: 0,
       minWidth: 100,
       maxWidth: 100,
@@ -423,9 +180,17 @@ function LeadManagement() {
         lead.id === editingLead.id ? { ...lead, ...formData, updatedDate: new Date().toISOString().split("T")[0] } : lead
       );
     } else {
-      // Adding new lead
+      // Adding new lead with an automatically generated ID (L001, L002, etc.)
+      // Find the maximum numeric part of the existing IDs
+      const maxId = rowData.length > 0
+        ? Math.max(...rowData.map((l) => Number(l.id.replace('L', ''))))
+        : 0;
+      
+      // Generate the new ID with 'L' prefix and padded number
+      const newId = `L${String(maxId + 1).padStart(3, '0')}`;
+      
       const newLead = {
-        id: rowData.length > 0 ? Math.max(...rowData.map((l) => l.id)) + 1 : 1,
+        id: newId,
         createdDate: new Date().toISOString().split("T")[0],
         updatedDate: new Date().toISOString().split("T")[0],
         status: "New",
@@ -445,7 +210,7 @@ function LeadManagement() {
     setOpenForm(true);
   };
 
-  // ✅ Handle Delete action
+  // ✅ Corrected Handle Delete action
   const handleDeleteLead = (id) => {
     const updatedData = rowData.filter((lead) => lead.id !== id);
     setRowData(updatedData);
@@ -457,11 +222,10 @@ function LeadManagement() {
       <h2 style={{ textAlign: "center", marginBottom: "10px" }}>Lead Management</h2>
 
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Button 
-          variant="contained" 
-          onClick={() => setOpenForm(true)} 
-          startIcon={<FaPlus />}
-          sx={{ bgcolor: 'success.main', '&:hover': { bgcolor: 'success.dark' } }} // Set button color to green
+        <Button
+          variant="contained"
+          onClick={() => setOpenForm(true)}
+          sx={{ bgcolor: '#4caf50', '&:hover': { bgcolor: '#4caf50' } }} // Set button color to green
         >
           Add New Lead
         </Button>
@@ -478,7 +242,7 @@ function LeadManagement() {
           onGridReady={(params) => params.api.sizeColumnsToFit()}
         />
       </div>
-      
+
       {/* Pagination Controls moved below the grid */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 2 }}>
         <label>Rows per page:</label>
@@ -493,8 +257,8 @@ function LeadManagement() {
       <LeadForms
         open={openForm}
         onClose={() => {
-          setOpenForm(false)
- setEditingLead(null);
+          setOpenForm(false);
+          setEditingLead(null);
         }}
         leadData={editingLead}
         onSave={handleSaveLead}
