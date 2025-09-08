@@ -112,7 +112,7 @@ function LeadForms({ open, onClose, leadData, onSave }) {
             value={formData.mobile || ""}
             onChange={(e) => handleChange("mobile", e.target.value)}
             onInput={(e) =>
-              (e.target.value = e.target.value.replace(/[^0-9]/g, ""))
+              (e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0,10))
             }
             error={!!errors.mobile}
             helperText={errors.mobile}

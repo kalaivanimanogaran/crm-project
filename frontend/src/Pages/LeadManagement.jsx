@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   ModuleRegistry,
@@ -6,21 +6,21 @@ import {
   TextFilterModule,
   DateFilterModule,
   PaginationModule,
+  RowAutoHeightModule,
 } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Button, Chip, Stack, IconButton, Box } from "@mui/material";
-
-// ✅ Import icons from react-icons
 import { FaEdit, FaTrash } from "react-icons/fa";
 import LeadForms from "../Components/LeadForms";
 
-// ✅ Register all required modules, including PaginationModule
+// ✅ Register all required modules
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   TextFilterModule,
   DateFilterModule,
   PaginationModule,
+  RowAutoHeightModule,
 ]);
 
 // ✅ Cell renderer for Lead Status
@@ -41,15 +41,22 @@ const StatusCellRenderer = (params) => {
   return <Chip label={value} color={color} size="small" />;
 };
 
-// ✅ Cell renderer for Actions using React Icons
+// ✅ Cell renderer for Actions using React Icons (delete issue fixed)
 const ActionsCellRenderer = (params) => {
-  const { data, onEdit, onDelete } = params;
+  const { data } = params;
+  const onEdit = params.colDef.cellRendererParams.onEdit;
+  const onDelete = params.colDef.cellRendererParams.onDelete;
+
   return (
     <Stack direction="row" spacing={1}>
       <IconButton aria-label="edit" size="small" onClick={() => onEdit(data)}>
         <FaEdit style={{ color: "blue" }} />
       </IconButton>
-      <IconButton aria-label="delete" size="small" onClick={() => onDelete(data.id)}>
+      <IconButton
+        aria-label="delete"
+        size="small"
+        onClick={() => onDelete(data.id)} // ✅ only deletes selected row
+      >
         <FaTrash style={{ color: "red" }} />
       </IconButton>
     </Stack>
@@ -62,7 +69,7 @@ function LeadManagement() {
   const [editingLead, setEditingLead] = useState(null);
   const [pageSize, setPageSize] = useState(10);
 
-  // ✅ Default Column Properties with filter and sortable enabled
+  // ✅ Default Column Properties
   const defaultColDef = useMemo(() => {
     return {
       sortable: true,
@@ -70,93 +77,39 @@ function LeadManagement() {
       flex: 1,
       minWidth: 150,
       filter: true,
+      wrapText: true,
+      autoHeight: true,
     };
   }, []);
 
-  // ✅ Updated Column Definitions to match LeadForms fields
-  const [columnDefs, setColumnDefs] = useState([
+  // ✅ Column Definitions
+  const [columnDefs] = useState([
     {
       headerName: "Lead ID",
       field: "id",
       minWidth: 120,
       valueGetter: (params) => {
-        if (params.data && params.data.id && typeof params.data.id === 'string') {
+        if (params.data && params.data.id && typeof params.data.id === "string") {
           return Number(params.data.id.slice(1));
         }
         return null;
       },
-      sort: 'asc',
-      unSortIcon: true
+      sort: "asc",
+      unSortIcon: true,
+      wrapText: false,
+      autoHeight: false,
     },
-    {
-      headerName: "Lead Name",
-      field: "name",
-      minWidth: 180,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Company",
-      field: "company",
-      minWidth: 200,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Contact Person",
-      field: "contactPerson",
-      minWidth: 180,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Mobile Number",
-      field: "mobile",
-      minWidth: 150,
-    },
-    {
-      headerName: "Email",
-      field: "email",
-      minWidth: 200,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Status",
-      field: "status",
-      cellRenderer: StatusCellRenderer,
-      minWidth: 150,
-    },
-    {
-      headerName: "Source",
-      field: "source",
-      minWidth: 150,
-    },
-    {
-      headerName: "Assigned To",
-      field: "assignedTo",
-      minWidth: 150,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Notes / Remarks",
-      field: "notes",
-      minWidth: 250,
-      wrapText: true,
-      autoHeight: true,
-    },
-    {
-      headerName: "Created Date",
-      field: "createdDate",
-      sort: "desc",
-      minWidth: 150,
-    },
-    {
-      headerName: "Updated Date",
-      field: "updatedDate",
-      minWidth: 150,
-    },
+    { headerName: "Lead Name", field: "name", minWidth: 180 },
+    { headerName: "Company", field: "company", minWidth: 200 },
+    { headerName: "Contact Person", field: "contactPerson", minWidth: 180 },
+    { headerName: "Mobile Number", field: "mobile", minWidth: 150 },
+    { headerName: "Email", field: "email", minWidth: 200 },
+    { headerName: "Status", field: "status", cellRenderer: StatusCellRenderer, minWidth: 150 },
+    { headerName: "Source", field: "source", minWidth: 150 },
+    { headerName: "Assigned To", field: "assignedTo", minWidth: 150 },
+    { headerName: "Notes / Remarks", field: "notes", minWidth: 250 },
+    { headerName: "Created Date", field: "createdDate", sort: "desc", minWidth: 150 },
+    { headerName: "Updated Date", field: "updatedDate", minWidth: 150 },
     {
       headerName: "Actions",
       field: "actions",
@@ -170,6 +123,8 @@ function LeadManagement() {
       flex: 0,
       minWidth: 100,
       maxWidth: 100,
+      wrapText: false,
+      autoHeight: false,
     },
   ]);
 
@@ -186,13 +141,14 @@ function LeadManagement() {
     let updatedData;
     if (editingLead) {
       updatedData = rowData.map((lead) =>
-        lead.id === editingLead.id ? { ...lead, ...formData, updatedDate: new Date().toISOString().split("T")[0] } : lead
+        lead.id === editingLead.id
+          ? { ...lead, ...formData, updatedDate: new Date().toISOString().split("T")[0] }
+          : lead
       );
     } else {
-      const maxId = rowData.length > 0
-        ? Math.max(...rowData.map((l) => Number(l.id.replace('L', ''))))
-        : 0;
-      const newId = `L${String(maxId + 1).padStart(3, '0')}`;
+      const maxId =
+        rowData.length > 0 ? Math.max(...rowData.map((l) => Number(l.id.replace("L", "")))) : 0;
+      const newId = `L${String(maxId + 1).padStart(3, "0")}`;
       const newLead = {
         id: newId,
         createdDate: new Date().toISOString().split("T")[0],
@@ -214,21 +170,11 @@ function LeadManagement() {
     setOpenForm(true);
   };
 
-  // ✅ Corrected Handle Delete action with confirmation and clearer logic
+  // ✅ Handle Delete action
   const handleDeleteLead = (idToDelete) => {
-    // Show a confirmation dialog before deleting the item
     if (window.confirm("Are you sure you want to delete this lead?")) {
-      // ✅ This is the core logic: filter the array to remove the item with the matching ID
       const updatedData = rowData.filter((lead) => lead.id !== idToDelete);
-      
-      // ✅ Log the ID and the new array to debug
-      console.log("ID to delete:", idToDelete);
-      console.log("Updated data after filtering:", updatedData);
-      
-      // ✅ Update the state with the new, filtered data
       setRowData(updatedData);
-      
-      // ✅ Update localStorage with the new data
       localStorage.setItem("leads", JSON.stringify(updatedData));
     }
   };
@@ -241,7 +187,7 @@ function LeadManagement() {
         <Button
           variant="contained"
           onClick={() => setOpenForm(true)}
-          sx={{ bgcolor: '#4caf50', '&:hover': { bgcolor: '#4caf50' } }}
+          sx={{ bgcolor: "#4caf50", "&:hover": { bgcolor: "#4caf50" } }}
         >
           Add New Lead
         </Button>
